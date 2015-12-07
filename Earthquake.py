@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Earthquake.py
-# Copyright © Masaaki Kawata All rights reserved.
+# Copyright c Masaaki Kawata All rights reserved.
+# Copyright (c) YA-androidapp All rights reserved.
 
 import clr
 clr.AddReferenceByPartialName("mscorlib")
@@ -23,7 +24,7 @@ from System.Xml import XmlDocument
 from Apricot import Script, Entry, Word, Sequence
 
 def update():
-	request = WebRequest.Create("http://tenki.jp/component/static_api/rss/earthquake/recent_entries_by_day.xml")
+	request = WebRequest.Create("http://weather.livedoor.com/forecast/rss/earthquake.xml")
 	entryList = List[Entry]()
 
 	def onUpdate():
@@ -37,36 +38,51 @@ def update():
 					stream = response.GetResponseStream()
 					doc = XmlDocument()
 					doc.Load(stream)
+
+					i = 0
 				
 					for itemXmlNode in doc.GetElementsByTagName("item"):
+						flag = 0
+
 						entry = Entry()
 						epicenter = None
 						maxLevel = None
 			
 						for xmlNode in itemXmlNode.ChildNodes:
-							if xmlNode.Name.Equals("link"):
-								entry.Resource = Uri(xmlNode.InnerText)
+							if xmlNode.Name.Equals("title"):
+								if '[ PR ]' in xmlNode.InnerText:
+									flag = 0
+									break
+								else:
+									flag = 1
+							#if xmlNode.Name.Equals("link"):
+								#entry.Resource = Uri(xmlNode.InnerText)
 							elif xmlNode.Name.Equals("description"):
 								entry.Description = xmlNode.InnerText
-							elif xmlNode.Name.Equals("tenkiJP:earthquake"):
+							elif xmlNode.Name.Equals("ldWeather:earthquake"):
 								for attribute in xmlNode.Attributes:
 									if attribute.Name.Equals("epicenter"):
 										epicenter = attribute.Value
-									elif attribute.Name.Equals("max_level"):
+									elif attribute.Name.Equals("maximumintensity"):
 										maxLevel = attribute.Value
-									elif attribute.Name.Equals("outbreak_datetime"):
+									elif attribute.Name.Equals("date"):
 										entry.Created = entry.Modified = DateTime.Parse(attribute.Value)
 						
 						if epicenter is not None:
-							if String.IsNullOrEmpty(maxLevel):
-								maxLevel = "N/A"
+							if flag == 1:
+								if String.IsNullOrEmpty(maxLevel):
+									maxLevel = "N/A"
 
-							if CultureInfo.CurrentCulture.Equals(CultureInfo.GetCultureInfo("ja-JP")):
-								entry.Title = String.Format("震度{0} - {1}", maxLevel, epicenter)
-							else:
-								entry.Title = String.Format("Intensity {0} - {1}", maxLevel, epicenter)
+								if CultureInfo.CurrentCulture.Equals(CultureInfo.GetCultureInfo("ja-JP")):
+									entry.Title = String.Format("震度{0} - {1}", maxLevel, epicenter)
+								else:
+									entry.Title = String.Format("Intensity {0} - {1}", maxLevel, epicenter)
 
-							entryList.Add(entry)
+								entryList.Add(entry)
+								i += 1
+
+								if i > 3:
+									break
 
 				finally:			
 					if stream is not None:
@@ -130,21 +146,45 @@ def getTermList(dictionary, text):
 	selectedTermList = List[String]()
 
 	while stringBuilder.Length > 0:
-		s = stringBuilder.ToString()
-		selectedTerm = None
+		s1 = stringBuilder.ToString()
+		selectedTerm1 = None
 
-		if dictionary.ContainsKey(s[0]):
-			for term in dictionary[s[0]]:
-				if s.StartsWith(term, StringComparison.Ordinal) and term.Length > (0 if selectedTerm is None else selectedTerm.Length):
-					selectedTerm = term
+		if dictionary.ContainsKey(s1[0]):
+			for term in dictionary[s1[0]]:
+				if s1.StartsWith(term, StringComparison.Ordinal) and term.Length > (0 if selectedTerm1 is None else selectedTerm1.Length):
+					selectedTerm1 = term
 		
-		if String.IsNullOrEmpty(selectedTerm):
+		if String.IsNullOrEmpty(selectedTerm1):
 			stringBuilder.Remove(0, 1)
 		else:
-			if not selectedTermList.Contains(selectedTerm):
-				selectedTermList.Add(selectedTerm)
+			sb = StringBuilder(stringBuilder.ToString(1, stringBuilder.Length - 1))
+			selectedTerm2 = None
+			i = 0
+			max = 0
 
-			stringBuilder.Remove(0, selectedTerm.Length)
+			while sb.Length > 0 and i < selectedTerm1.Length:
+				s2 = sb.ToString()
+
+				if dictionary.ContainsKey(s2[0]):
+					for term in dictionary[s2[0]]:
+						if s2.StartsWith(term, StringComparison.Ordinal) and term.Length > (0 if selectedTerm2 is None else selectedTerm2.Length):
+							selectedTerm2 = term
+							max = i + selectedTerm2.Length
+
+				sb.Remove(0, 1)
+				i += 1
+
+			if not String.IsNullOrEmpty(selectedTerm2) and selectedTerm1.Length < selectedTerm2.Length:
+				if not selectedTermList.Contains(selectedTerm2):
+					selectedTermList.Add(selectedTerm2)
+
+				stringBuilder.Remove(0, max)
+
+			else:
+				if not selectedTermList.Contains(selectedTerm1):
+					selectedTermList.Add(selectedTerm1)
+
+				stringBuilder.Remove(0, selectedTerm1.Length)
 
 	return selectedTermList
 

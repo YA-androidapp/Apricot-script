@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Weather.py
-# Copyright © Masaaki Kawata All rights reserved.
+# Copyright c Masaaki Kawata All rights reserved.
+# Copyright (c) YA-androidapp All rights reserved.
 
 import clr
 clr.AddReferenceByPartialName("mscorlib")
@@ -34,6 +35,7 @@ from Apricot import Script, Sequence
 
 # e.g. Tokyo, Japan
 location = "Tokyo, Japan"
+appid = "<auth key of the Open Weather Map>"
 
 # http://www.json.org/
 class JsonDecoder(Object):
@@ -351,7 +353,7 @@ def onTick(timer, e):
 
 		if NetworkInterface.GetIsNetworkAvailable():
 			try:
-				request = WebRequest.Create(Uri(String.Concat("http://api.openweathermap.org/data/2.5/find?q=", urlEncode(location), "&units=metric&cnt=1")))
+				request = WebRequest.Create(Uri(String.Concat("http://api.openweathermap.org/data/2.5/find?q=", urlEncode(location), "&units=metric&cnt=1&appid=", appid)))
 				response = None
 				stream = None
 				streamReader = None
