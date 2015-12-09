@@ -360,28 +360,26 @@ def onTick(timer, e):
 					# f.write("\n\n\n")
 
 					if jsonDictionary is not None and clr.GetClrType(Dictionary[String, Object]).IsInstanceOfType(jsonDictionary) and jsonDictionary.ContainsKey("quotes") and jsonDictionary["quotes"] is not None and clr.GetClrType(Array).IsInstanceOfType(jsonDictionary["quotes"]):
-						entry = Entry()
 						for obj in jsonDictionary["quotes"]:
 							ask = None
 							bid = None
 							currencyPairCode = None
-							entry.Description = ""
-							entry.Title = ""
+							entry = Entry()
 
 							if obj is not None and clr.GetClrType(Dictionary[String, Object]).IsInstanceOfType(obj):
 								ask = obj["ask"]
 								bid = obj["bid"]
 								currencyPairCode = obj["currencyPairCode"]
-
 								val = String.Format("{0}: {1} / {2}", currencyPairCode, ask, bid)
-								entry.Description = val
-								entry.Title = val
 								# f.write(val)
 								# f.write("\n")
-								entryList.Add(entry)
 
-								if currencyPairCode == 'USDJPY':
-									MessageBox.Show(ask, currencyPairCode)
+								entry.Title = val
+								entry.Description = val
+								entryList.Add(entry)
+								# MessageBox.Show(val, currencyPairCode)
+
+						Script.Instance.Alert(entryList)
 
 				finally:
 					if streamReader is not None:
