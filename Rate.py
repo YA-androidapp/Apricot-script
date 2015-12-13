@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Rate.py
+# Copyright c Masaaki Kawata All rights reserved.
 # Copyright (c) YA-androidapp All rights reserved.
 
 import clr
@@ -367,17 +368,19 @@ def onTick(timer, e):
 							entry = Entry()
 
 							if obj is not None and clr.GetClrType(Dictionary[String, Object]).IsInstanceOfType(obj):
-								ask = obj["ask"]
-								bid = obj["bid"]
 								currencyPairCode = obj["currencyPairCode"]
-								val = String.Format("{0}: {1} / {2}", currencyPairCode, ask, bid)
-								# f.write(val)
-								# f.write("\n")
+								if (("EUR" in currencyPairCode) or ("GBP" in currencyPairCode) or ("USD" in currencyPairCode))and ("JPY" in currencyPairCode):
+									currencyPairCode = currencyPairCode.replace("EUR", u"ユーロ").replace("GBP", u"ポンド").replace("USD", u"ドル").replace("JPY", "")
+									ask = obj["ask"]
+									bid = obj["bid"]
+									val = String.Format("{0}: {1} / {2}", currencyPairCode, ask, bid)
+									# f.write(val)
+									# f.write("\n")
 
-								entry.Title = val
-								entry.Description = val
-								entryList.Add(entry)
-								# MessageBox.Show(val, currencyPairCode)
+									entry.Title = val
+									entry.Description = val
+									entryList.Add(entry)
+									# MessageBox.Show(val, currencyPairCode)
 
 						Script.Instance.Alert(entryList)
 
