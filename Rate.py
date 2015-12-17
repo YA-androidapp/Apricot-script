@@ -400,23 +400,19 @@ def onTick(timer, e):
 
 		# f.close()
 
-		return RateList
+		return entryList
 
 	def onCompleted(task):
-		if entryList.Count > 0:
-			for entry in entryList:
-				termList = getTermList(dictionary, entry.Title)
-			
-				if termList.Count > 0:
-					sequenceList = List[Sequence]()
+		if task.Result.Key.Count > 0:
+			sequenceList = List[Sequence]()
 
-					for sequence in Script.Instance.Sequences:
-						if sequence.Name.Equals("Activate"):
-							sequenceList.Add(sequence)
-					
-					if Script.Instance.TryEnqueue(Script.Instance.Prepare(sequenceList, None, termList)):
-						break
+			for sequence in Script.Instance.Sequences:
+				if sequence.Name.Equals("Activate"):
+					sequenceList.Add(sequence)
 
+			for s in task.Result.Key:
+				Script.Instance.TryEnqueue(Script.Instance.Prepare(sequenceList, s))
+						
 	Task.Factory.StartNew(onUpdate, TaskCreationOptions.LongRunning).ContinueWith(onCompleted, TaskScheduler.FromCurrentSynchronizationContext())
 
 	timer.Stop()
