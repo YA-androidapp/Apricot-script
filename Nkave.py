@@ -13,6 +13,9 @@ clr.AddReferenceByPartialName("PresentationCore")
 clr.AddReferenceByPartialName("PresentationFramework")
 clr.AddReferenceByPartialName("Apricot")
 
+import System
+from System.Diagnostics import Process
+from System.IO import Directory, File
 from System import Object, Nullable, Byte, UInt32, Double, Char, String, Uri, DateTime, TimeSpan, Array, StringComparison, Convert, BitConverter, Math, Action#, DateTime
 from System.Collections.Generic import List, Dictionary, KeyValuePair, HashSet
 from System.IO import Stream, StreamReader, MemoryStream, FileStream, SeekOrigin, FileMode, FileAccess, FileShare
@@ -34,6 +37,7 @@ from System.Windows.Media.Imaging import BitmapImage, BitmapCacheOption, BitmapC
 from System.Windows.Shapes import Rectangle
 from System.Windows.Threading import DispatcherTimer, DispatcherPriority
 from Apricot import Script, Entry, Sequence
+
 import re
 
 def onTick(timer, e):
@@ -63,6 +67,11 @@ def onTick(timer, e):
 						entry.Title = val
 						entry.Description = val
 						entryList.Add(entry)
+						
+						vfx = "C:\\Program Files (x86)\\tamiyasu_talk\\vrx.exe"
+						if File.Exists(vfx):
+							Process.Start(vfx,val)
+
 						Script.Instance.Alert(entryList)
 
 				finally:
